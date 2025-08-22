@@ -1,0 +1,382 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <!-- Header Section -->
+  <div class="mb-8">
+    <div class="flex justify-between items-start mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Authors</h1>
+        <p class="text-gray-600">Manage your content creators and contributors</p>
+        <p class="text-sm text-gray-500 mt-1" *ngIf="totalElements > 0">
+          {{ totalElements }} authors total
+        </p>
+      </div>
+      <button 
+        (click)="showForm()"
+        *ngIf="!isFormVisible"
+        [disabled]="isLoading"
+        class="bg-gray-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition-colors disabled:opacity-50">
+        <span class="text-lg">+</span>
+        New Author
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="relative max-w-md">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Search authors..."
+        class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+    {{ error }}
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading && !isFormVisible" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+  </div>
+
+  <!-- Inline Form -->
+  <div 
+    *ngIf="isFormVisible"
+    class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200">
+    
+    <!-- Form Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-semibold text-gray-900">New Author</h2>
+      <button 
+        (click)="hideForm()"
+        [disabled]="isSubmitting"
+        class="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50">
+        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Form Error -->
+    <div *ngIf="error" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+      {{ error }}
+    </div>
+
+    <!-- Form Fields -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Left Column -->
+      <div class="space-y-4">
+        <!-- Full Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Full Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="extendedNewAuthor.fullName"
+            (blur)="generateUsername()"
+            placeholder="Enter full name..."
+            [disabled]="isSubmitting"
+            class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white outline-none transition-colors disabled:opacity-50">
+        </div>
+
+        <!-- Username -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Username <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="extendedNewAuthor.username"
+            placeholder="Enter username..."
+            [disabled]="isSubmitting"
+            class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white outline-none transition-colors disabled:opacity-50">
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Email <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="email"
+            [(ngModel)]="extendedNewAuthor.email"
+            placeholder="author@example.com"
+            [disabled]="isSubmitting"
+            class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white outline-none transition-colors disabled:opacity-50">
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Password <span class="text-red-500">*</span>
+          </label>
+          <div class="flex gap-2">
+            <input
+              type="password"
+              [(ngModel)]="newAuthor.password"
+              placeholder="Enter password..."
+              [disabled]="isSubmitting"
+              class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white outline-none transition-colors disabled:opacity-50">
+            <button
+              type="button"
+              (click)="generatePassword()"
+              [disabled]="isSubmitting"
+              class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm disabled:opacity-50">
+              Generate
+            </button>
+          </div>
+        </div>
+
+        <!-- Role -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-3">
+            Role <span class="text-red-500">*</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              *ngFor="let roleOption of roleOptions"
+              (click)="selectRole(roleOption.value)"
+              [disabled]="isSubmitting"
+              type="button"
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-all border-2 text-left disabled:opacity-50"
+              [style.background-color]="extendedNewAuthor.role === roleOption.value ? roleOption.color + '20' : 'transparent'"
+              [style.color]="extendedNewAuthor.role === roleOption.value ? roleOption.color : '#6B7280'"
+              [style.border-color]="extendedNewAuthor.role === roleOption.value ? roleOption.color : '#D1D5DB'">
+              <div class="font-medium">{{ roleOption.label }}</div>
+              <div class="text-xs opacity-70">{{ roleOption.description }}</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="space-y-4">
+        <!-- Biography -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Biography
+          </label>
+          <textarea
+            [(ngModel)]="extendedNewAuthor.bio"
+            placeholder="Tell us about this author..."
+            rows="4"
+            [disabled]="isSubmitting"
+            class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white outline-none resize-none transition-colors disabled:opacity-50"></textarea>
+        </div>
+
+        <!-- Avatar URL -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Avatar URL
+          </label>
+          <input
+            type="url"
+            [(ngModel)]="extendedNewAuthor.avatarUrl"
+            placeholder="https://example.com/avatar.jpg"
+            [disabled]="isSubmitting"
+            class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white outline-none transition-colors disabled:opacity-50">
+        </div>
+
+        <!-- Social Links -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-3">
+            Social Links
+          </label>
+          <div class="space-y-3">
+            <!-- Twitter -->
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">Twitter</label>
+              <input
+                type="url"
+                [(ngModel)]="extendedNewAuthor.socialLinks.twitter"
+                placeholder="https://twitter.com/username"
+                [disabled]="isSubmitting"
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white outline-none transition-colors text-sm disabled:opacity-50">
+            </div>
+            <!-- LinkedIn -->
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">LinkedIn</label>
+              <input
+                type="url"
+                [(ngModel)]="extendedNewAuthor.socialLinks.linkedin"
+                placeholder="https://linkedin.com/in/username"
+                [disabled]="isSubmitting"
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white outline-none transition-colors text-sm disabled:opacity-50">
+            </div>
+            <!-- Website -->
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">Website</label>
+              <input
+                type="url"
+                [(ngModel)]="extendedNewAuthor.socialLinks.website"
+                placeholder="https://website.com"
+                [disabled]="isSubmitting"
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white outline-none transition-colors text-sm disabled:opacity-50">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
+      <button 
+        (click)="hideForm()"
+        [disabled]="isSubmitting"
+        type="button"
+        class="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50">
+        Cancel
+      </button>
+      <button 
+        (click)="saveAuthor()"
+        [disabled]="isSubmitting || !extendedNewAuthor.fullName.trim() || !extendedNewAuthor.email.trim() || !extendedNewAuthor.username.trim() || !newAuthor.password.trim()"
+        type="button"
+        class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+        <svg *ngIf="isSubmitting" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        <svg *ngIf="!isSubmitting" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        {{ isSubmitting ? 'Creating...' : 'Create Author' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Authors Grid -->
+  <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div 
+      *ngFor="let author of filteredAuthors" 
+      class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-6 relative group">
+      
+      <!-- Author Avatar -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="relative">
+          <img 
+            *ngIf="author.avatarUrl" 
+            [src]="author.avatarUrl" 
+            [alt]="author.fullName"
+            class="w-12 h-12 rounded-full object-cover"
+            (error)="onImageError($event)">
+          <div 
+            class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
+            [class.hidden]="author.avatarUrl"
+            [style.background-color]="getRoleColor(author.role) + '20'"
+            [style.color]="getRoleColor(author.role)">
+            {{ getInitials(author.fullName) }}
+          </div>
+        </div>
+        
+        <!-- Delete Button (appears on hover) -->
+        <button 
+          (click)="deleteAuthor(author.id)"
+          class="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-50 rounded text-red-500">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Author Info -->
+      <div class="mb-4">
+        <h3 class="font-semibold text-lg text-gray-900 mb-1">{{ author.fullName }}</h3>
+        <p class="text-sm text-gray-500 mb-1">{{ author.username }}</p>
+        <p class="text-sm text-gray-500 mb-3">{{ author.email }}</p>
+        
+        <!-- Role Badge -->
+        <span 
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+          [style.background-color]="getRoleColor(author.role) + '20'"
+          [style.color]="getRoleColor(author.role)">
+          {{ getRoleLabel(author.role) }}
+        </span>
+      </div>
+
+      <!-- Biography -->
+      <p *ngIf="author.bio" class="text-gray-600 text-sm line-clamp-3 mb-4">{{ author.bio }}</p>
+
+      <!-- Status -->
+      <div class="flex items-center justify-between text-sm">
+        <span class="flex items-center gap-1">
+          <div 
+            class="w-2 h-2 rounded-full"
+            [class.bg-green-400]="author.enabled !== false"
+            [class.bg-red-400]="author.enabled === false"></div>
+          {{ author.enabled !== false ? 'Active' : 'Inactive' }}
+        </span>
+        <span class="text-gray-400">
+          {{ formatDate(author.createdAt || '') }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="flex items-center justify-center gap-2 mt-8">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 0"
+      class="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+      Previous
+    </button>
+    
+    <div class="flex gap-1">
+      <button
+        *ngFor="let page of [].constructor(totalPages); let i = index"
+        (click)="goToPage(i)"
+        [class.bg-blue-600]="i === currentPage"
+        [class.text-white]="i === currentPage"
+        [class.bg-white]="i !== currentPage"
+        [class.text-gray-700]="i !== currentPage"
+        class="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+        {{ i + 1 }}
+      </button>
+    </div>
+    
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage >= totalPages - 1"
+      class="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+      Next
+    </button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="filteredAuthors.length === 0 && !searchQuery && !isLoading" class="text-center py-12">
+    <div class="text-gray-400 mb-4">
+      <svg class="h-16 w-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">No authors yet</h3>
+    <p class="text-gray-500 mb-4">Add your first author to start building your team</p>
+    <button 
+      (click)="showForm()"
+      class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+      Add Author
+    </button>
+  </div>
+
+  <!-- No Search Results -->
+  <div *ngIf="filteredAuthors.length === 0 && searchQuery && !isLoading" class="text-center py-12">
+    <div class="text-gray-400 mb-4">
+      <svg class="h-16 w-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">No authors found</h3>
+    <p class="text-gray-500 mb-4">Try adjusting your search terms</p>
+    <button 
+      (click)="clearSearch()"
+      class="text-blue-600 hover:text-blue-700 font-medium">
+      Clear search
+    </button>
+  </div>
+</div>

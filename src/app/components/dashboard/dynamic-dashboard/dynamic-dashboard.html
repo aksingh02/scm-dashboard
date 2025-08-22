@@ -1,0 +1,52 @@
+<div class="dynamic-dashboard">
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="flex items-center justify-center h-64">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <span class="ml-3 text-gray-600">Loading your dashboard...</span>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            {{ errorMessage }}
+        </div>
+    </div>
+
+    <!-- Role-based dashboard rendering -->
+    <div *ngIf="!isLoading && !errorMessage && currentUser" class="dashboard-content">
+
+        <!-- Admin Dashboard -->
+        <app-admin-dashboard *ngIf="dashboardType === 'admin'"></app-admin-dashboard>
+
+        <!-- Publisher Dashboard -->
+        <app-publisher-dashboard *ngIf="dashboardType === 'publisher'"></app-publisher-dashboard>
+
+        <!-- Editor Dashboard -->
+        <app-editor-dashboard *ngIf="dashboardType === 'editor'"></app-editor-dashboard>
+
+        <!-- Author Dashboard -->
+        <app-author-dashboard *ngIf="dashboardType === 'author'"></app-author-dashboard>
+
+        <!-- Journalist Dashboard (for journalists, columnists, contributors, reporters) -->
+        <app-journalist-dashboard *ngIf="dashboardType === 'journalist'"></app-journalist-dashboard>
+
+        <!-- Fallback Dashboard -->
+        <div *ngIf="!dashboardType" class="bg-gray-50 rounded-lg p-6 text-center">
+            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Welcome to SCM Dashboard</h3>
+            <p class="text-gray-600 mb-4">Your personalized dashboard is being prepared...</p>
+            <button (click)="refreshDashboard()"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium">
+                Refresh Dashboard
+            </button>
+        </div>
+    </div>
+</div>

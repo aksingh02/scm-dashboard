@@ -1,0 +1,145 @@
+<div class="flex flex-col h-screen justify-between border-r border-gray-200">
+  <!-- Header -->
+  <div class="flex-shrink-0">
+    <div class="flex items-center p-4 border-b border-gray-200"
+      [ngClass]="{'justify-center': !isVisible, 'justify-start': isVisible}">
+      <div class="bg-gray-100 rounded-lg" [ngClass]="{'mr-3 p-2': isVisible, 'mr-0': !isVisible}">
+        <img src="logo.jpeg" alt="SCM Logo">
+      </div>
+      <div *ngIf="isVisible" class="transition-opacity duration-200"
+        [ngClass]="{'opacity-100': isVisible, 'opacity-0': !isVisible}">
+        <div class="text-lg font-bold text-gray-900 whitespace-nowrap">SCM Dashboard</div>
+        <div class="text-xs text-gray-500 whitespace-nowrap">News Management</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION - Now scrollable and role-based -->
+  <div class="flex-1 overflow-hidden">
+    <nav class="h-full overflow-y-auto overflow-x-hidden mt-2" [ngClass]="{'px-2': isVisible, 'px-1': !isVisible}">
+      <ul class="space-y-1 pb-4">
+
+        <!-- Dynamic Navigation Items Based on User Role -->
+        <li *ngFor="let item of navigationItems">
+          <a [routerLink]="item.path" routerLinkActive="text-gray-900 bg-gray-300 font-semibold"
+            [routerLinkActiveOptions]="{exact: item.path === '/dashboard'}"
+            class="flex items-center rounded-md text-gray-600 hover:bg-gray-300 hover:text-gray-900 transition relative group"
+            [ngClass]="{
+               'px-3 py-2': isVisible,
+               'px-2 py-3 justify-center': !isVisible
+             }" [title]="!isVisible ? item.label : ''">
+
+            <!-- Dynamic SVG Icon -->
+            <svg class="w-5 h-5 flex-shrink-0" [ngClass]="{'mr-2': isVisible, 'mr-0': !isVisible}" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-width="2" [attr.d]="item.icon" stroke-linecap="round" stroke-linejoin="round">
+              </path>
+            </svg>
+
+            <span *ngIf="isVisible" class="transition-opacity duration-200">{{ item.label }}</span>
+
+            <!-- Tooltip for collapsed state -->
+            <div *ngIf="!isVisible"
+              class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50"
+              style="transform: translateX(0); min-width: max-content;">
+              {{ item.label }}
+            </div>
+          </a>
+        </li>
+
+        <!-- Role-based conditional items (alternative approach) -->
+        <!-- Dashboard - Always visible to authenticated users -->
+        <li *ngIf="navigationItems.length === 0">
+          <a routerLink="/dashboard" routerLinkActive="text-gray-900 bg-gray-300 font-semibold"
+            [routerLinkActiveOptions]="{exact: true}"
+            class="flex items-center rounded-md text-gray-600 hover:bg-gray-300 hover:text-gray-900 transition relative group"
+            [ngClass]="{
+               'px-3 py-2': isVisible,
+               'px-2 py-3 justify-center': !isVisible
+             }" [title]="!isVisible ? 'Dashboard' : ''">
+            <svg class="w-5 h-5 flex-shrink-0" [ngClass]="{'mr-2': isVisible, 'mr-0': !isVisible}" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7m-9 2v8m0 0H5a2 2 0 01-2-2v-5.5M12 20h7a2 2 0 002-2v-5.5m-2-2l2 2"
+                stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <span *ngIf="isVisible" class="transition-opacity duration-200">Dashboard</span>
+            <div *ngIf="!isVisible"
+              class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              Dashboard
+            </div>
+          </a>
+        </li>
+
+        <!-- Separator for different sections -->
+        <li *ngIf="navigationItems.length > 2" class="border-t border-gray-200 mt-4">
+        </li>
+
+        <!-- Profile Link - Always available -->
+        <li>
+          <a routerLink="/profile" routerLinkActive="text-gray-900 bg-gray-300 font-semibold"
+            class="flex items-center rounded-md text-gray-600 hover:bg-gray-300 hover:text-gray-900 transition relative group"
+            [ngClass]="{
+               'px-3 py-2': isVisible,
+               'px-2 py-3 justify-center': !isVisible
+             }" [title]="!isVisible ? 'Profile' : ''">
+            <svg class="w-5 h-5 flex-shrink-0" [ngClass]="{'mr-2': isVisible, 'mr-0': !isVisible}" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <span *ngIf="isVisible" class="transition-opacity duration-200">Profile</span>
+            <div *ngIf="!isVisible"
+              class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              Profile
+            </div>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- USER PROFILE & ROLE INDICATOR - Fixed at bottom -->
+  <div class="flex-shrink-0 border-t border-gray-200 pt-4"
+    [ngClass]="{'px-4 pt-3': isVisible, 'px-1 pt-3': !isVisible}">
+
+    <!-- User Info -->
+    <div class="flex items-center mb-4 relative group" [ngClass]="{
+           'justify-start': isVisible,
+           'justify-center': !isVisible
+         }">
+      <div class="flex items-center justify-center w-8 h-8 rounded-full text-white font-bold flex-shrink-0" [ngClass]="{
+             'mr-3': isVisible, 
+             'mr-0': !isVisible,
+             'bg-red-500': isAdmin(),
+             'bg-blue-500': canManageContent() && !isAdmin(),
+             'bg-green-500': canCreateContent() && !canManageContent(),
+             'bg-gray-500': !canCreateContent()
+           }">
+        {{ getUserInitial() }}
+      </div>
+
+      <div *ngIf="isVisible" class="min-w-0 transition-opacity duration-200">
+        <div class="text-sm font-medium text-gray-900 whitespace-nowrap">
+          {{ getUserDisplayName() }}
+        </div>
+        <div class="text-xs whitespace-nowrap" [ngClass]="{
+               'text-red-600': isAdmin(),
+               'text-blue-600': canManageContent() && !isAdmin(),
+               'text-green-600': canCreateContent() && !canManageContent(),
+               'text-gray-500': !canCreateContent()
+             }">
+          {{ getUserRoleDisplay() }}
+        </div>
+      </div>
+
+      <!-- Tooltip for collapsed state -->
+      <div *ngIf="!isVisible"
+        class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50"
+        style="transform: translateX(0); min-width: max-content;">
+        <div class="font-medium">{{ getUserDisplayName() }}</div>
+        <div class="text-xs opacity-75">{{ getUserRoleDisplay() }}</div>
+      </div>
+    </div>
+
+  </div>

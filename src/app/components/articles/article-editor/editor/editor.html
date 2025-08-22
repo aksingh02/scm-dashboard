@@ -1,0 +1,209 @@
+<div class="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+  <!-- Toolbar -->
+  <div class="bg-gray-50 border-b border-gray-200 p-2">
+    <div id="toolbar-{{editorId}}" class="flex flex-wrap items-center gap-1">
+      <!-- Font formatting -->
+      <select class="ql-font bg-white border border-gray-300 rounded px-2 py-1 text-sm">
+        <option selected>Sans Serif</option>
+        <option value="serif">Serif</option>
+        <option value="monospace">Monospace</option>
+      </select>
+
+      <select class="ql-size bg-white border border-gray-300 rounded px-2 py-1 text-sm ml-2">
+        <option value="small">Small</option>
+        <option selected>Normal</option>
+        <option value="large">Large</option>
+        <option value="huge">Huge</option>
+      </select>
+
+      <div class="w-px h-6 bg-gray-300 mx-2"></div>
+
+      <!-- Text formatting -->
+      <button class="ql-bold p-1 rounded hover:bg-gray-200 transition-colors" title="Bold">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M5 3a1 1 0 000 2h1v10H5a1 1 0 100 2h8.5a3.5 3.5 0 001.852-6.47A3.5 3.5 0 0013 3H5zM8 5h5a1.5 1.5 0 110 3H8V5zm0 5h5.5a1.5 1.5 0 110 3H8v-3z" />
+        </svg>
+      </button>
+
+      <button class="ql-italic p-1 rounded hover:bg-gray-200 transition-colors" title="Italic">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M8 3a1 1 0 000 2h1.243l-2.876 10H5a1 1 0 100 2h8a1 1 0 100-2h-1.243l2.876-10H15a1 1 0 100-2H8z" />
+        </svg>
+      </button>
+
+      <button class="ql-underline p-1 rounded hover:bg-gray-200 transition-colors" title="Underline">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M4 17a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM6 3a1 1 0 011 1v6a3 3 0 106 0V4a1 1 0 112 0v6a5 5 0 01-10 0V4a1 1 0 011-1z" />
+        </svg>
+      </button>
+
+      <button class="ql-strike p-1 rounded hover:bg-gray-200 transition-colors" title="Strike">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M6 10a2 2 0 000 4h8a2 2 0 100-4H6zM5 6a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zM5 14a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" />
+        </svg>
+      </button>
+
+      <div class="w-px h-6 bg-gray-300 mx-2"></div>
+
+      <!-- Text color -->
+      <select class="ql-color bg-white border border-gray-300 rounded px-2 py-1 text-sm">
+        <option selected></option>
+        <option value="red"></option>
+        <option value="orange"></option>
+        <option value="yellow"></option>
+        <option value="green"></option>
+        <option value="blue"></option>
+        <option value="purple"></option>
+      </select>
+
+      <select class="ql-background bg-white border border-gray-300 rounded px-2 py-1 text-sm">
+        <option selected></option>
+        <option value="red"></option>
+        <option value="orange"></option>
+        <option value="yellow"></option>
+        <option value="green"></option>
+        <option value="blue"></option>
+        <option value="purple"></option>
+      </select>
+
+      <div class="w-px h-6 bg-gray-300 mx-2"></div>
+
+      <!-- Alignment -->
+      <button class="ql-align p-1 rounded hover:bg-gray-200 transition-colors" value="" title="Align Left">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 8a1 1 0 011-1h8a1 1 0 110 2H4a1 1 0 01-1-1zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h8a1 1 0 110 2H4a1 1 0 01-1-1z" />
+        </svg>
+      </button>
+
+      <button class="ql-align p-1 rounded hover:bg-gray-200 transition-colors" value="center" title="Align Center">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM5 8a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM5 16a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" />
+        </svg>
+      </button>
+
+      <button class="ql-align p-1 rounded hover:bg-gray-200 transition-colors" value="right" title="Align Right">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM7 8a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM7 16a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1z" />
+        </svg>
+      </button>
+
+      <button class="ql-align p-1 rounded hover:bg-gray-200 transition-colors" value="justify" title="Justify">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 8a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+        </svg>
+      </button>
+
+      <div class="w-px h-6 bg-gray-300 mx-2"></div>
+
+      <!-- Lists -->
+      <button class="ql-list p-1 rounded hover:bg-gray-200 transition-colors" value="ordered" title="Numbered List">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M3 4a1 1 0 011-1h1a1 1 0 010 2H4a1 1 0 01-1-1zM3 8a1 1 0 011-1h1a1 1 0 010 2H4a1 1 0 01-1-1zM3 12a1 1 0 011-1h1a1 1 0 010 2H4a1 1 0 01-1-1zM7 4a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zM7 8a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zM7 12a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1z" />
+        </svg>
+      </button>
+
+      <button class="ql-list p-1 rounded hover:bg-gray-200 transition-colors" value="bullet" title="Bullet List">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M5 4a1 1 0 11-2 0 1 1 0 012 0zM5 10a1 1 0 11-2 0 1 1 0 012 0zM5 16a1 1 0 11-2 0 1 1 0 012 0zM8 4a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zM8 10a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zM8 16a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1z" />
+        </svg>
+      </button>
+
+      <div class="w-px h-6 bg-gray-300 mx-2"></div>
+
+      <!-- Indent -->
+      <button class="ql-indent p-1 rounded hover:bg-gray-200 transition-colors" value="-1" title="Decrease Indent">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 8a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 12a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+        </svg>
+      </button>
+
+      <button class="ql-indent p-1 rounded hover:bg-gray-200 transition-colors" value="+1" title="Increase Indent">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM7 8a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zM7 12a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+        </svg>
+      </button>
+
+      <div class="w-px h-6 bg-gray-300 mx-2"></div>
+
+      <!-- Insert -->
+      <button class="ql-link p-1 rounded hover:bg-gray-200 transition-colors" title="Insert Link">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" />
+        </svg>
+      </button>
+
+      <button class="ql-image p-1 rounded hover:bg-gray-200 transition-colors" title="Insert Image">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
+        </svg>
+      </button>
+
+      <button class="ql-video p-1 rounded hover:bg-gray-200 transition-colors" title="Insert Video">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+        </svg>
+      </button>
+
+      <div class="w-px h-6 bg-gray-300 mx-2"></div>
+
+      <!-- Actions -->
+      <button class="ql-clean p-1 rounded hover:bg-gray-200 transition-colors" title="Remove Formatting">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+          <path fill-rule="evenodd"
+            d="M4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 1a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+            clip-rule="evenodd" />
+        </svg>
+      </button>
+
+      <!-- Document actions -->
+      <!-- <div class="flex-1"></div>
+      <div class="flex gap-2">
+        <button (click)="saveDocument()"
+          class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm">
+          Save
+        </button>
+        <button (click)="exportToPDF()"
+          class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm">
+          Export PDF
+        </button>
+        <button (click)="printDocument()"
+          class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm">
+          Print
+        </button>
+      </div> -->
+    </div> 
+  </div>
+
+  <!-- Editor -->
+  <div class="bg-white min-h-96">
+    <div #editor class="h-96 focus:outline-none"></div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="bg-gray-50 border-t border-gray-200 px-4 py-2 text-sm text-gray-600 flex justify-between items-center">
+    <div>
+      Words: {{wordCount}} | Characters: {{charCount}}
+    </div>
+    <div class="flex items-center gap-4">
+      <div>Zoom: {{zoomLevel}}%</div>
+      <div class="flex gap-1">
+        <button (click)="changeZoom(-10)" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">-</button>
+        <button (click)="changeZoom(10)" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">+</button>
+      </div>
+    </div>
+  </div>
+</div>
