@@ -1,12 +1,141 @@
 <div *ngIf="showEditor" class="min-h-screen bg-gray-50">
   <!-- Show Editor Component -->
   <div>
-    <app-article-editor (backToList)="onBackToList()"></app-article-editor>
-    </div>
+    <app-article-editor 
+      [editingArticle]="editingArticle" 
+      (backToList)="onBackToList()">
+    </app-article-editor>
+  </div>
 </div>
 
-  <!-- Show Articles List -->
-  <div *ngIf="!showEditor" class="p-6">
+<!-- Article Detail View -->
+<div *ngIf="showArticleDetail && selectedArticle" class="min-h-screen bg-gray-50">
+  <div class="max-w-4xl mx-auto px-6 py-8">
+    <!-- Header with Back Button -->
+    <div class="mb-6">
+      <button (click)="onBackFromDetail()" 
+              class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Articles
+      </button>
+    </div>
+
+    <!-- Article Content -->
+    <article class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <!-- Featured Image -->
+      <div *ngIf="selectedArticle.imageUrl" class="aspect-video overflow-hidden">
+        <img [src]="selectedArticle.imageUrl" 
+             [alt]="selectedArticle.title"
+             class="w-full h-full object-cover">
+      </div>
+
+      <!-- Article Header -->
+      <div class="p-8">
+        <div class="mb-6">
+          <!-- Status and Meta Info -->
+          <div class="flex items-center gap-4 mb-4 text-sm text-gray-500">
+            <span 
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+              [ngClass]="{
+                'bg-green-100 text-green-800': getArticleStatus(selectedArticle) === 'published',
+                'bg-yellow-100 text-yellow-800': getArticleStatus(selectedArticle) === 'draft'
+              }">
+              {{ getArticleStatus(selectedArticle) }}
+            </span>
+            
+            <span *ngIf="selectedArticle.featured"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+              Featured
+            </span>
+            
+            <span *ngIf="selectedArticle.trending"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+              Trending
+            </span>
+
+            <div class="flex items-center gap-1">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <span>{{ formatDate(selectedArticle.publishedAt || selectedArticle.createdAt) }}</span>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                <span>{{ selectedArticle.viewCount }}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+                <span>{{ selectedArticle.likeCount }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Title -->
+          <h1 class="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+            {{ selectedArticle.title }}
+          </h1>
+
+          <!-- Excerpt -->
+          <p class="text-xl text-gray-600 mb-6 leading-relaxed">
+            {{ selectedArticle.excerpt }}
+          </p>
+
+          <!-- Author Info (if available) -->
+          <div *ngIf="selectedArticle.author" class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
+            <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+              <span class="text-gray-600 font-medium">
+                {{ selectedArticle.author }}
+              </span>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900">{{ selectedArticle.author }}</p>
+              <p class="text-sm text-gray-500">Author</p>
+            </div>
+          </div>
+
+          <!-- Edit Button (if user is author/admin) -->
+          <div class="mb-6">
+            <button (click)="onEditArticle(selectedArticle)"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Edit Article
+            </button>
+          </div>
+        </div>
+
+        <!-- Article Content -->
+        <div class="prose max-w-none mb-8">
+          <div class="text-gray-800 leading-relaxed whitespace-pre-wrap">{{ selectedArticle.content }}</div>
+        </div>
+
+        <!-- Tags -->
+        <div *ngIf="selectedArticle.tags && selectedArticle.tags.length > 0" class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Tags</h3>
+          <div class="flex flex-wrap gap-2">
+            <span *ngFor="let tag of selectedArticle.tags" 
+                  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+              {{ tag }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</div>
+
+<!-- Show Articles List -->
+<div *ngIf="!showEditor && !showArticleDetail" class="p-6">
   <!-- Header Section -->
   <div class="mb-8">
     <div class="flex justify-between items-start mb-2">
@@ -125,109 +254,116 @@
   </div>
 
   <!-- Articles Grid -->
-  <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <div 
-      *ngFor="let article of filteredArticles" 
-      class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
-      
-      <!-- Article Image -->
-      <div class="aspect-video overflow-hidden bg-gray-200">
-        <img 
-          *ngIf="article.imageUrl; else placeholder"
-          [src]="article.imageUrl" 
-          [alt]="article.title"
-          class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-          (error)="$any($event.target).style.display='none'">
-        <ng-template #placeholder>
-          <div class="w-full h-full flex items-center justify-center text-gray-400">
-            <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            </svg>
-          </div>
-        </ng-template>
+  <!-- Articles Grid -->
+<div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+  <div 
+    *ngFor="let article of filteredArticles" 
+    class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer select-none"
+    (click)="onViewArticle(article)"
+    role="button"
+    tabindex="0"
+    (keydown.enter)="onViewArticle(article)"
+    (keydown.space)="onViewArticle(article)">
+    
+    <!-- Article Image -->
+    <div class="aspect-video overflow-hidden bg-gray-200 pointer-events-none">
+      <img 
+        *ngIf="article.imageUrl; else placeholder"
+        [src]="article.imageUrl" 
+        [alt]="article.title"
+        class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+        (error)="$any($event.target).style.display='none'"
+        draggable="false">
+      <ng-template #placeholder>
+        <div class="w-full h-full flex items-center justify-center text-gray-400">
+          <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Article Content -->
+    <div class="p-4 pointer-events-none">
+      <!-- Title -->
+      <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
+        {{ article.title }}
+      </h3>
+
+      <!-- Description -->
+      <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+        {{ article.excerpt }}
+      </p>
+
+      <!-- Tags -->
+      <div *ngIf="article.tags && article.tags.length > 0" class="mb-3">
+        <div class="flex flex-wrap gap-1">
+          <span 
+            *ngFor="let tag of article.tags.slice(0, 3)" 
+            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+            {{ tag }}
+          </span>
+          <span 
+            *ngIf="article.tags.length > 3" 
+            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+            +{{ article.tags.length - 3 }}
+          </span>
+        </div>
       </div>
 
-      <!-- Article Content -->
-      <div class="p-4">
-        <!-- Title -->
-        <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
-          {{ article.title }}
-        </h3>
+      <!-- Status Badge -->
+      <div class="mb-4 flex items-center gap-2">
+        <span 
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+          [ngClass]="{
+            'bg-green-100 text-green-800': getArticleStatus(article) === 'published',
+            'bg-yellow-100 text-yellow-800': getArticleStatus(article) === 'draft'
+          }">
+          {{ getArticleStatus(article) }}
+        </span>
+        
+        <!-- Featured badge -->
+        <span 
+          *ngIf="article.featured"
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+          Featured
+        </span>
+        
+        <!-- Trending badge -->
+        <span 
+          *ngIf="article.trending"
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+          Trending
+        </span>
+      </div>
 
-        <!-- Description -->
-        <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-          {{ article.excerpt }}
-        </p>
-
-        <!-- Tags -->
-        <div *ngIf="article.tags && article.tags.length > 0" class="mb-3">
-          <div class="flex flex-wrap gap-1">
-            <span 
-              *ngFor="let tag of article.tags.slice(0, 3)" 
-              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-              {{ tag }}
-            </span>
-            <span 
-              *ngIf="article.tags.length > 3" 
-              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
-              +{{ article.tags.length - 3 }}
-            </span>
-          </div>
+      <!-- Footer -->
+      <div class="flex items-center justify-between text-sm text-gray-500">
+        <div class="flex items-center gap-1">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <span>{{ formatDate(article.publishedAt || article.createdAt) }}</span>
         </div>
-
-        <!-- Status Badge -->
-        <div class="mb-4 flex items-center gap-2">
-          <span 
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-            [ngClass]="{
-              'bg-green-100 text-green-800': getArticleStatus(article) === 'published',
-              'bg-yellow-100 text-yellow-800': getArticleStatus(article) === 'draft'
-            }">
-            {{ getArticleStatus(article) }}
-          </span>
-          
-          <!-- Featured badge -->
-          <span 
-            *ngIf="article.featured"
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-            Featured
-          </span>
-          
-          <!-- Trending badge -->
-          <span 
-            *ngIf="article.trending"
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-            Trending
-          </span>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex items-center justify-between text-sm text-gray-500">
+        <div class="flex items-center gap-3">
           <div class="flex items-center gap-1">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
             </svg>
-            <span>{{ formatDate(article.publishedAt || article.createdAt) }}</span>
+            <span>{{ article.viewCount }}</span>
           </div>
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1">
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-              </svg>
-              <span>{{ article.viewCount }}</span>
-            </div>
-            <div class="flex items-center gap-1">
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-              </svg>
-              <span>{{ article.likeCount }}</span>
-            </div>
+          <div class="flex items-center gap-1">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            <span>{{ article.likeCount }}</span>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
   <!-- Empty State -->
   <div *ngIf="!isLoading && filteredArticles.length === 0" class="text-center py-12">

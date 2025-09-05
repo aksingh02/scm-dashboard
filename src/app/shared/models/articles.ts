@@ -27,6 +27,7 @@ export interface Article {
   content: string;
   summary?: string;
   slug: string;
+  urlSlug: string;
   imageUrl: string;
   status: ArticleStatus;
   author: Author;

@@ -10,18 +10,18 @@ const endpoint = env.scm_endpoint;
 const auth_endpoint = env.scm_auth_endpoint;
 
 // API endpoints
-const articles_endpoint = "http://localhost:8085/api/articles/";
-const articles_public_endpoint = "http://localhost:8085/api/articles/public";
-const articles_create_endpoint = "http://localhost:8085/api/articles";
-const articles_draft_endpoint = "http://localhost:8085/api/articles";
+const articles_endpoint = endpoint + "articles/";
+const articles_public_endpoint = endpoint + "articles/public";
+const articles_create_endpoint = endpoint + "articles";
+const articles_draft_endpoint = endpoint + "articles";
 
 // File upload endpoints (if needed)
-const file_upload_endpoint = "http://localhost:8085/api/files/upload";
-const image_upload_endpoint = "http://localhost:8085/api/images/upload";
+const file_upload_endpoint = endpoint + "files/upload";
+const image_upload_endpoint = endpoint + "images/upload";
 
 // Author/User management endpoints
-const signup_endpoint = "http://localhost:8085/api/auth/signup";
-const users_endpoint = "http://localhost:8085/api/users/";
+const signup_endpoint = endpoint + "auth/signup";
+const users_endpoint = endpoint + "users/";
 
 // Author interfaces
 export interface AuthorCreateRequest {
@@ -70,14 +70,14 @@ export class Rest {
   constructor(
     private http: HttpClient,
     private authService: AuthService
-  ) { } 
+  ) { }
 
   // Helper method to get headers with or without auth
   private getHeaders(requireAuth: boolean = false): HttpHeaders {
     if (requireAuth) {
       return this.authService.getAuthHeaders();
     }
-    
+
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Accept': 'application/json'
@@ -261,7 +261,7 @@ export class Rest {
       .set('sortBy', sortBy)
       .set('sortDir', sortDir);
 
-    return this.http.get<ApiResponse>(endpoint + "articles/public", { 
+    return this.http.get<ApiResponse>(endpoint + "articles/public", {
       params,
       headers: this.getHeaders(false)
     });
@@ -282,7 +282,7 @@ export class Rest {
       .set('sortBy', sortBy)
       .set('sortDir', sortDir);
 
-    return this.http.get<ApiResponse>(endpoint + "articles/admin/all", { 
+    return this.http.get<ApiResponse>(endpoint + "articles/admin/all", {
       params,
       headers: this.getHeaders(true)
     });
@@ -322,6 +322,63 @@ export class Rest {
   saveDraft(article: ArticleCreateRequest): Observable<Article> {
     const draftArticle = { ...article, status: ArticleStatus.DRAFT };
     return this.http.post<Article>(articles_draft_endpoint, draftArticle, {
+      headers: this.getHeaders(true)
+    });
+  }
+
+  createArticleWithImage(formData: FormData): Observable<Article> {
+    const token = this.authService.getTokenForHeader();
+    let headers = new HttpHeaders({
+      'Accept': 'application/json'
+    });
+
+    if (token) {
+      headers = headers.set('Authorization', token);
+    }
+
+    return this.http.post<Article>(articles_create_endpoint, formData, {
+      headers
+    });
+  }
+
+  updateArticleWithImage(id: number, formData: FormData): Observable<Article> {
+    const token = this.authService.getTokenForHeader();
+    let headers = new HttpHeaders({
+      'Accept': 'application/json'
+    });
+
+    if (token) {
+      headers = headers.set('Authorization', token);
+    }
+
+    return this.http.put<Article>(`${articles_endpoint}${id}`, formData, {
+      headers
+    });
+  }
+
+  /**
+   * Update existing article without image (requires auth)
+   */
+  updateArticleData(id: number, article: Partial<ArticleCreateRequest>): Observable<Article> {
+    return this.http.put<Article>(`${articles_endpoint}${id}`, article, {
+      headers: this.getHeaders(true)
+    });
+  }
+
+  /**
+   * Get single article with full details for editing (requires auth)
+   */
+  getArticleForEdit(id: number): Observable<Article> {
+    return this.http.get<Article>(`${articles_endpoint}${id}/edit`, {
+      headers: this.getHeaders(true)
+    });
+  }
+
+  /**
+   * Check if user can edit article (requires auth)
+   */
+  canEditArticle(id: number): Observable<{ canEdit: boolean, reason?: string }> {
+    return this.http.get<{ canEdit: boolean, reason?: string }>(`${articles_endpoint}${id}/can-edit`, {
       headers: this.getHeaders(true)
     });
   }
@@ -394,7 +451,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/search`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/search`, {
       params,
       headers: this.getHeaders(requireAuth)
     });
@@ -413,7 +470,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/tag/${tag}`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/tag/${tag}`, {
       params,
       headers: this.getHeaders(requireAuth)
     });
@@ -431,7 +488,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/category/${category}`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/category/${category}`, {
       params,
       headers: this.getHeaders(false)
     });
@@ -449,7 +506,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/category/id/${categoryId}`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/category/id/${categoryId}`, {
       params,
       headers: this.getHeaders(false)
     });
@@ -468,7 +525,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/categories/multiple`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/categories/multiple`, {
       params,
       headers: this.getHeaders(false)
     });
@@ -485,7 +542,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/trending`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/trending`, {
       params,
       headers: this.getHeaders(false)
     });
@@ -502,7 +559,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/featured`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/featured`, {
       params,
       headers: this.getHeaders(false)
     });
@@ -519,7 +576,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/latest`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/latest`, {
       params,
       headers: this.getHeaders(false)
     });
@@ -536,7 +593,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/most-viewed`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/most-viewed`, {
       params,
       headers: this.getHeaders(false)
     });
@@ -571,7 +628,7 @@ export class Rest {
       .set('tags', tags.join(','))
       .set('matchAll', matchAll.toString());
 
-    return this.http.get<Article[]>(`${endpoint}articles/tags/search`, { 
+    return this.http.get<Article[]>(`${endpoint}articles/tags/search`, {
       params,
       headers: this.getHeaders(false)
     });
@@ -590,7 +647,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/my-articles`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/my-articles`, {
       params,
       headers: this.getHeaders(true)
     });
@@ -608,7 +665,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/my-articles/status/${status}`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/my-articles/status/${status}`, {
       params,
       headers: this.getHeaders(true)
     });
@@ -625,7 +682,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/my-articles/published`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/my-articles/published`, {
       params,
       headers: this.getHeaders(true)
     });
@@ -660,7 +717,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse>(`${endpoint}articles/drafts`, { 
+    return this.http.get<ApiResponse>(`${endpoint}articles/drafts`, {
       params,
       headers: this.getHeaders(true)
     });
@@ -692,7 +749,7 @@ export class Rest {
       .set('sortBy', sortBy)
       .set('sortDir', sortDir);
 
-    return this.http.get<UsersApiResponse>(users_endpoint, { 
+    return this.http.get<UsersApiResponse>(users_endpoint, {
       params,
       headers: this.getHeaders(true)
     });
@@ -709,7 +766,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<UsersApiResponse>(endpoint + "users", { 
+    return this.http.get<UsersApiResponse>(endpoint + "users", {
       params,
       headers: this.getHeaders(true)
     });
@@ -755,7 +812,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<UsersApiResponse>(`${users_endpoint}search`, { 
+    return this.http.get<UsersApiResponse>(`${users_endpoint}search`, {
       params,
       headers: this.getHeaders(true)
     });
@@ -774,7 +831,7 @@ export class Rest {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<UsersApiResponse>(`${users_endpoint}by-role`, { 
+    return this.http.get<UsersApiResponse>(`${users_endpoint}by-role`, {
       params,
       headers: this.getHeaders(true)
     });
@@ -824,16 +881,16 @@ export class Rest {
   uploadImage(file: File): Observable<{ url: string }> {
     const formData = new FormData();
     formData.append('image', file);
-    
+
     const token = this.authService.getTokenForHeader();
     let headers = new HttpHeaders({
       'Accept': 'application/json'
     });
-    
+
     if (token) {
       headers = headers.set('Authorization', token);
     }
-    
+
     return this.http.post<{ url: string }>(image_upload_endpoint, formData, {
       headers
     });
@@ -845,16 +902,16 @@ export class Rest {
   uploadFile(file: File): Observable<{ url: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     const token = this.authService.getTokenForHeader();
     let headers = new HttpHeaders({
       'Accept': 'application/json'
     });
-    
+
     if (token) {
       headers = headers.set('Authorization', token);
     }
-    
+
     return this.http.post<{ url: string }>(file_upload_endpoint, formData, {
       headers
     });

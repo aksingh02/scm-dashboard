@@ -32,6 +32,9 @@ export class Articles implements OnInit {
 
   // View state
   showEditor: boolean = false;
+  showArticleDetail: boolean = false;
+  selectedArticle: Article | null = null;
+  editingArticle: Article | null = null;
 
   // Make Math available in template
   Math = Math;
@@ -81,7 +84,6 @@ export class Articles implements OnInit {
       )
       .subscribe((response: ApiResponse) => {
         console.log('Articles loaded:', response);
-        console.log('Reaching here');
         this.articles = response.content || [];
         this.totalElements = response.totalElements;
         this.totalPages = response.totalPages;
@@ -90,11 +92,11 @@ export class Articles implements OnInit {
       });
   }
 
-updateFilteredArticles(): void {
-  // Temporarily simplified - just copy all articles
-  this.filteredArticlesCache = [...this.articles];
-  console.log('Filtered articles updated:', this.filteredArticlesCache.length);
-}
+  updateFilteredArticles(): void {
+    // Temporarily simplified - just copy all articles
+    this.filteredArticlesCache = [...this.articles];
+    console.log('Filtered articles updated:', this.filteredArticlesCache.length);
+  }
 
   get filteredArticles(): Article[] {
     return this.filteredArticlesCache;
@@ -141,13 +143,42 @@ updateFilteredArticles(): void {
     return article.published ? 'published' : 'draft';
   }
 
-  onNewArticle(): void {
+  // NEW: View article details
+  onViewArticle(article: Article): void {
+    this.selectedArticle = article;
+    this.showArticleDetail = true;
+    this.showEditor = false;
+    
+    // Increment view count
+    if (article.urlSlug) {
+      this.rest.incrementViewCount(article.urlSlug).subscribe();
+    }
+  }
+
+  // NEW: Edit article
+  onEditArticle(article: Article): void {
+    this.editingArticle = article;
     this.showEditor = true;
+    this.showArticleDetail = false;
+  }
+
+  onNewArticle(): void {
+    this.editingArticle = null;
+    this.showEditor = true;
+    this.showArticleDetail = false;
   }
 
   onBackToList(): void {
     this.showEditor = false;
+    this.showArticleDetail = false;
+    this.selectedArticle = null;
+    this.editingArticle = null;
     this.refreshArticles(); // Refresh articles when coming back from editor
+  }
+
+  onBackFromDetail(): void {
+    this.showArticleDetail = false;
+    this.selectedArticle = null;
   }
 
   onSearch(event: Event): void {

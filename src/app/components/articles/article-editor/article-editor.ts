@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 import { Rest } from '../../../rest';
-import { ArticleCreateRequest } from '../../../shared/models/articles';
+import { Article, ArticleCreateRequest, Author} from '../../../shared/models/articles';
 
 interface Category {
   id: number;
@@ -17,16 +17,21 @@ interface Category {
   templateUrl: './article-editor.html',
   styleUrl: './article-editor.css'
 })
-export class ArticleEditor {
+export class ArticleEditor implements OnInit, OnChanges {
   @Output() backToList = new EventEmitter<void>();
+  @Input() editingArticle: Article | null = null;
 
   isPreviewMode = false;
   isSubmitting = false;
   submitError: string | null = null;
   categoryOptions: Category[] = [];
   newTag = '';
+  selectedImageFile: File | null = null;
+  isEditMode = false;
+  author: Author | null = null;
 
   article = {
+    id: null as number | null,
     title: '',
     urlSlug: '',
     excerpt: '',
@@ -34,21 +39,72 @@ export class ArticleEditor {
     status: 'DRAFT',
     featuredArticle: false,
     trending: false,
-    selectedCategoryIds: [] as number[],  // Changed to array of IDs
-    author: '',
+    selectedCategoryIds: [] as number[],
+    author: this.author,
     featuredImageUrl: '',
     tags: [] as string[]
   };
 
   statusOptions = [
-    { label: 'Draft', value: 'DRAFT' },           // Updated to uppercase
-    { label: 'Ready for Review', value: 'READY_FOR_REVIEW' },   // Updated to uppercase
-    { label: 'Archived', value: 'ARCHIVED' }      // Updated to uppercase
+    { label: 'Draft', value: 'DRAFT' },
+    { label: 'Ready for Review', value: 'READY_FOR_REVIEW' },
+    { label: 'Archived', value: 'ARCHIVED' }
   ];
 
   constructor(
     private rest: Rest
-  ) {}
+  ) { }
+
+  ngOnInit() {
+    this.loadCategories();
+    this.initializeArticle();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['editingArticle'] && changes['editingArticle'].currentValue) {
+      this.initializeArticle();
+    }
+  }
+
+  private initializeArticle() {
+    if (this.editingArticle) {
+      this.isEditMode = true;
+      this.article = {
+        id: this.editingArticle.id,
+        title: this.editingArticle.title || '',
+        urlSlug: this.editingArticle.urlSlug || '',
+        excerpt: this.editingArticle.excerpt || '',
+        content: this.editingArticle.content || '',
+        status: this.editingArticle.status || 'DRAFT',
+        featuredArticle: this.editingArticle.featured || false,
+        trending: this.editingArticle.trending || false,
+        selectedCategoryIds: this.editingArticle.categories || [],
+        author: this.editingArticle.author,
+        featuredImageUrl: this.editingArticle.imageUrl || '',
+        tags: this.editingArticle.tags || []
+      };
+    } else {
+      this.isEditMode = false;
+      this.resetArticle();
+    }
+  }
+
+  private resetArticle() {
+    this.article = {
+      id: null,
+      title: '',
+      urlSlug: '',
+      excerpt: '',
+      content: '',
+      status: 'DRAFT',
+      featuredArticle: false,
+      trending: false,
+      selectedCategoryIds: [],
+      author: this.author,
+      featuredImageUrl: '',
+      tags: []
+    };
+  }
 
   get titleCharCount(): number {
     return this.article.title.length;
@@ -56,6 +112,14 @@ export class ArticleEditor {
 
   get excerptCharCount(): number {
     return this.article.excerpt.length;
+  }
+
+  get headerTitle(): string {
+    return this.isEditMode ? 'Edit Article' : 'New Article';
+  }
+
+  get headerDescription(): string {
+    return this.isEditMode ? 'Update your article content' : 'Create engaging content for your audience';
   }
 
   onGoBack(): void {
@@ -67,7 +131,10 @@ export class ArticleEditor {
   }
 
   onTitleChange(): void {
-    this.article.urlSlug = this.generateSlug(this.article.title);
+    // Only auto-generate slug for new articles
+    if (!this.isEditMode) {
+      this.article.urlSlug = this.generateSlug(this.article.title);
+    }
   }
 
   generateSlug(text: string): string {
@@ -80,12 +147,14 @@ export class ArticleEditor {
   onImageUpload(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      const file = input.files[0];
+      this.selectedImageFile = input.files[0];
+
+      // Show preview
       const reader = new FileReader();
       reader.onload = () => {
         this.article.featuredImageUrl = reader.result as string;
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(this.selectedImageFile);
     }
   }
 
@@ -116,33 +185,26 @@ export class ArticleEditor {
     this.submitArticle(this.article.status === 'PUBLISHED');
   }
 
-  ngOnInit() {
-    this.loadCategories();
-  }
-
   private loadCategories() {
     this.rest.getArticlesCategories().subscribe(categories => {
       this.categoryOptions = categories;
       console.log('Categories loaded:', this.categoryOptions);
-    }, error => { 
+    }, error => {
       console.error('Error loading categories:', error);
       alert('Failed to load categories. Please try again later.');
     });
   }
 
-  // Updated method to handle multiple category selection
   onCategoryChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     const selectedOptions = Array.from(target.selectedOptions);
     this.article.selectedCategoryIds = selectedOptions.map(option => parseInt(option.value)).filter(id => !isNaN(id));
   }
 
-  // Helper method to check if category is selected
   isCategorySelected(categoryId: number): boolean {
     return this.article.selectedCategoryIds.includes(categoryId);
   }
 
-  // Method to toggle category selection (for checkbox-style selection)
   toggleCategorySelection(categoryId: number): void {
     const index = this.article.selectedCategoryIds.indexOf(categoryId);
     if (index > -1) {
@@ -152,7 +214,6 @@ export class ArticleEditor {
     }
   }
 
-  // Helper method to get category name by ID
   getCategoryNameById(categoryId: number): string {
     const category = this.categoryOptions.find(c => c.id === categoryId);
     return category ? category.name : 'Unknown Category';
@@ -166,40 +227,45 @@ export class ArticleEditor {
     this.isSubmitting = true;
     this.submitError = null;
 
-    // Updated to match the new API request format
-    const articleData: ArticleCreateRequest = {
+    const formData = new FormData();
+
+    const articleData = {
       title: this.article.title,
       excerpt: this.article.excerpt,
       content: this.article.content,
-      imageUrl: this.article.featuredImageUrl,
-      categoryIds: this.article.selectedCategoryIds,  // Send array of category IDs
-      tags: this.article.tags,                        // Include tags array
-      status: this.article.status,                    // Send uppercase status
-      trending: this.article.trending,                // Include trending field
-      published: publish,                             // Keep published boolean
-      featured: this.article.featuredArticle         // Keep featured boolean
+      categoryIds: this.article.selectedCategoryIds,
+      tags: this.article.tags,
+      status: this.article.status,
+      trending: this.article.trending,
+      published: publish,
+      featured: this.article.featuredArticle
     };
 
-    const apiCall = publish 
-      ? this.rest.createArticle(articleData)
-      : this.rest.saveDraft(articleData);
+    formData.append('article', JSON.stringify(articleData));
+
+    if (this.selectedImageFile) {
+      formData.append('image', this.selectedImageFile);
+    }
+
+    // Choose between create and update based on edit mode
+    const apiCall = this.isEditMode && this.article.id 
+      ? this.rest.updateArticleWithImage(this.article.id, formData)
+      : this.rest.createArticleWithImage(formData);
 
     apiCall.pipe(
-        catchError(error => {
-          console.error('Error submitting article:', error);
-          this.submitError = `Failed to ${publish ? 'publish' : 'save'} article. Please try again.`;
-          this.isSubmitting = false;
-          return of(null);
-        })
-      )
-      .subscribe(response => {
+      catchError(error => {
+        console.error('Error submitting article:', error);
+        const action = this.isEditMode ? 'update' : (publish ? 'publish' : 'save');
+        this.submitError = `Failed to ${action} article. Please try again.`;
         this.isSubmitting = false;
-        if (response) {
-          console.log('Article submitted successfully:', response);
-          // Go back to list after successful submission
-          this.backToList.emit();
-        }
-      });
+        return of(null);
+      })
+    ).subscribe(response => {
+      this.isSubmitting = false;
+      if (response) {
+        this.backToList.emit();
+      }
+    });
   }
 
   private validateArticle(): boolean {
