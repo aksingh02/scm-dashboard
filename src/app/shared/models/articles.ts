@@ -1,23 +1,4 @@
 
-// export interface Article {
-//   id: number;
-//   title: string;
-//   description: string;
-//   excerpt: string;
-//   content: string;
-//   slug: string;
-//   imageUrl: string;
-//   viewCount: number;
-//   likeCount: number;
-//   tags: string[];
-//   createdAt: string;
-//   updatedAt: string;
-//   publishedAt: string;
-//   trending: boolean;
-//   featured: boolean;
-//   published: boolean;
-// }
-
 import { Category } from "./category";
 
 export interface Article {
@@ -27,11 +8,11 @@ export interface Article {
   content: string;
   summary?: string;
   slug: string;
-  urlSlug: string;
+  urlSlug?: string;  // Some articles have urlSlug, others have slug
   imageUrl: string;
   status: ArticleStatus;
   author: Author;
-  categories: number[];
+  categories: Category[];
   tags: string[];
   featuredImage?: string;
   featured: boolean;
@@ -97,12 +78,12 @@ export interface ArticleCreateRequest {
   excerpt: string;
   content: string;
   imageUrl: string;
-  categoryIds: number[];      // Changed from single category to array of IDs
-  tags: string[];            // Added tags array
-  status: string;            // Should be "DRAFT", "PUBLISHED", or "ARCHIVED"
-  trending: boolean;         // Added trending field
-  published: boolean;        // Keep existing published boolean
-  featured: boolean;         // Keep existing featured boolean
+  categoryIds: number[];
+  tags: string[];
+  status: string;
+  trending: boolean;
+  published: boolean;
+  featured: boolean;
 }
 
 export enum ArticleStatus {

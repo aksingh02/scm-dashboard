@@ -93,12 +93,12 @@
           <div *ngIf="selectedArticle.author" class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
             <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
               <span class="text-gray-600 font-medium">
-                {{ selectedArticle.author }}
+                <!-- {{ selectedArticle.author }} -->
               </span>
             </div>
             <div>
-              <p class="font-medium text-gray-900">{{ selectedArticle.author }}</p>
-              <p class="text-sm text-gray-500">Author</p>
+              <p class="font-medium text-gray-900">{{ selectedArticle.author.fullName }}</p>
+              <p class="text-sm text-gray-500">{{ selectedArticle.author.role }}</p>
             </div>
           </div>
 

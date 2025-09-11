@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChange
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 import { Rest } from '../../../rest';
-import { Article, ArticleCreateRequest, Author} from '../../../shared/models/articles';
+import { Article, ArticleCreateRequest, Author } from '../../../shared/models/articles';
 
 interface Category {
   id: number;
@@ -69,16 +69,22 @@ export class ArticleEditor implements OnInit, OnChanges {
   private initializeArticle() {
     if (this.editingArticle) {
       this.isEditMode = true;
+
+      let categoryIds: number[] = [];
+      if (this.editingArticle.categories && Array.isArray(this.editingArticle.categories)) {
+        categoryIds = this.editingArticle.categories.map((cat: any) => cat.id);
+      }
+
       this.article = {
         id: this.editingArticle.id,
         title: this.editingArticle.title || '',
-        urlSlug: this.editingArticle.urlSlug || '',
+        urlSlug: this.editingArticle.urlSlug || this.editingArticle.slug || '',
         excerpt: this.editingArticle.excerpt || '',
         content: this.editingArticle.content || '',
         status: this.editingArticle.status || 'DRAFT',
         featuredArticle: this.editingArticle.featured || false,
         trending: this.editingArticle.trending || false,
-        selectedCategoryIds: this.editingArticle.categories || [],
+        selectedCategoryIds: categoryIds,
         author: this.editingArticle.author,
         featuredImageUrl: this.editingArticle.imageUrl || '',
         tags: this.editingArticle.tags || []
@@ -248,7 +254,7 @@ export class ArticleEditor implements OnInit, OnChanges {
     }
 
     // Choose between create and update based on edit mode
-    const apiCall = this.isEditMode && this.article.id 
+    const apiCall = this.isEditMode && this.article.id
       ? this.rest.updateArticleWithImage(this.article.id, formData)
       : this.rest.createArticleWithImage(formData);
 
