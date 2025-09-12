@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { Layout } from './shared/components/layout/layout';
 import { Articles } from './components/articles/articles';
-import { Dashboard } from './components/dashboard/dashboard';
 import { ArticleEditor } from './components/articles/article-editor/article-editor';
 import { Categories } from './components/articles/categories/categories';
 import { Authors } from './components/authors/authors';
