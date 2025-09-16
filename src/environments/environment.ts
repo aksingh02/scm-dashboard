@@ -10,7 +10,7 @@ export const environment = {
     // scm_auth_endpoint: "http://localhost:8085/api/auth/",
 
     ////// production:
-    scm_endpoint: "https://media-api.sylphcorps.com/api/",
-    scm_auth_endpoint: "https://media-api.sylphcorps.com/api/auth/",
+    scm_endpoint: "https://api.sylphcorpsmedia.com/api/",
+    scm_auth_endpoint: "https://api.sylphcorpsmedia.com/api/auth/",
 
   };
