@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Rest } from '../../../rest';
 import { Category } from '../../../shared/models/category';
 
+// ⬇️ import SweetAlert2
+import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-categories',
   standalone: true,
@@ -15,21 +18,28 @@ export class Categories implements OnInit {
   isFormVisible: boolean = false;
   categories: Category[] = [];
 
-  constructor(
-    private rest: Rest
-  ) {}
+  constructor(private rest: Rest) {}
 
   ngOnInit() {
     this.loadCategories();
   }
 
   loadCategories() {
-    this.rest.getArticlesCategories().subscribe(categories => {
-      this.categories = categories;
-      console.log('Categories loaded:', this.categories);
-    }, error => { 
-      console.error('Error loading categories:', error);
-      alert('Failed to load categories. Please try again later.');
+    this.rest.getArticlesCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        console.log('Categories loaded:', this.categories);
+      },
+      error: (error) => { 
+        console.error('Error loading categories:', error);
+        // ❌ alert
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops…',
+          text: 'Failed to load categories. Please try again later.',
+          confirmButtonColor: '#3B82F6'
+        });
+      }
     });
   }
   
@@ -40,19 +50,13 @@ export class Categories implements OnInit {
     description: '',
     color: '#3B82F6',
     icon: 'folder',
-    articleCount: 0, // Initialize articleCount
+    articleCount: 0,
     active: false
   };
 
   colorOptions = [
-    '#3B82F6', // Blue
-    '#EF4444', // Red
-    '#F59E0B', // Yellow
-    '#10B981', // Green
-    '#8B5CF6', // Purple
-    '#06B6D4', // Cyan
-    '#EC4899', // Pink
-    '#84CC16'  // Lime
+    '#3B82F6','#EF4444','#F59E0B','#10B981',
+    '#8B5CF6','#06B6D4','#EC4899','#84CC16'
   ];
 
   showForm() {
@@ -72,9 +76,9 @@ export class Categories implements OnInit {
       slug: '',
       description: '',
       color: '#3B82F6',
-      icon: 'folder', // Default icon
-      articleCount: 0, // Default article count
-      active: false // Default active status
+      icon: 'folder',
+      articleCount: 0,
+      active: false
     };
   }
 
@@ -97,21 +101,53 @@ export class Categories implements OnInit {
     if (this.newCategory.name.trim()) {
       const category: Category = {
         ...this.newCategory,
-        id: Date.now() // Simple ID generation
+        id: Date.now()
       };
       
       this.categories.push(category);
       this.hideForm();
       
-      // In a real app, you'd send this to your API
+      // ✅ Sweetalert success
+      Swal.fire({
+        icon: 'success',
+        title: 'Saved!',
+        text: `Category "${category.name}" saved successfully`,
+        timer: 1500,
+        showConfirmButton: false
+      });
+
       console.log('Category saved:', category);
+    } else {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Name required',
+        text: 'Please enter a category name'
+      });
     }
   }
 
   deleteCategory(categoryId: number) {
-    if (confirm('Are you sure you want to delete this category?')) {
-      this.categories = this.categories.filter(cat => cat.id !== categoryId);
-    }
+    // ✅ Sweetalert confirm
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will permanently delete the category!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.categories = this.categories.filter(cat => cat.id !== categoryId);
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'The category has been deleted.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
   }
 
   getIconSvg(iconName: string): string {

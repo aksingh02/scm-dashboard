@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SidebarService } from '../../services/sidebar.service';
 import { AuthService } from '../../services/auth.service';
+import Swal from 'sweetalert2';
 
 interface User {
   id: number;
@@ -30,7 +31,7 @@ export class Header implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef // Add ChangeDetectorRef for manual change detection
-  ) {}
+  ) { }
 
   ngOnInit() {
     // Subscribe to current user changes
@@ -53,7 +54,7 @@ export class Header implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     const dropdown = document.querySelector('.settings-dropdown');
     const button = document.querySelector('.settings-button');
-    
+
     if (dropdown && button && !dropdown.contains(target) && !button.contains(target)) {
       this.closeSettingsDropdown();
     }
@@ -95,9 +96,9 @@ export class Header implements OnInit, OnDestroy {
 
     // Get the highest priority role for display
     const roleHierarchy = ['ADMIN', 'EDITOR', 'AUTHOR', 'JOURNALIST', 'COLUMNIST', 'CONTRIBUTOR', 'REPORTER', 'USER'];
-    
+
     for (const role of roleHierarchy) {
-      if (this.currentUser.roles.some(userRole => 
+      if (this.currentUser.roles.some(userRole =>
         userRole === role || userRole === `ROLE_${role}`)) {
         return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
       }
@@ -105,8 +106,8 @@ export class Header implements OnInit, OnDestroy {
 
     // Fallback to first role if none match hierarchy
     const firstRole = this.currentUser.roles[0];
-    return firstRole.replace('ROLE_', '').charAt(0).toUpperCase() + 
-           firstRole.replace('ROLE_', '').slice(1).toLowerCase();
+    return firstRole.replace('ROLE_', '').charAt(0).toUpperCase() +
+      firstRole.replace('ROLE_', '').slice(1).toLowerCase();
   }
 
   navigateToProfile() {
@@ -129,16 +130,34 @@ export class Header implements OnInit, OnDestroy {
 
   onLogout() {
     this.closeSettingsDropdown();
-    
-    // Show confirmation dialog (optional)
-    if (confirm('Are you sure you want to logout?')) {
-      this.authService.logout();
-      this.router.navigate(['/login']).then(() => {
-        // Reset component state after logout
-        this.isSettingsDropdownOpen = false;
-        this.currentUser = null;
-        this.cdr.detectChanges();
-      });
-    }
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will be logged out of your session.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, logout',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.authService.logout();
+        this.router.navigate(['/login']).then(() => {
+          this.isSettingsDropdownOpen = false;
+          this.currentUser = null;
+          this.cdr.detectChanges();
+        });
+
+        Swal.fire({
+          title: 'Logged out!',
+          text: 'You have been successfully logged out.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
   }
+
 }
