@@ -40,7 +40,7 @@ export class AuthService {
   private isBrowser: boolean;
   
   // API Key for public endpoints
-  private readonly API_KEY = 'sk_prod_abc123def456ghi789jkl012mno345pqr';
+  private readonly API_KEY = environment.apiKey;
   
   // Public endpoints that require API key instead of JWT
   private readonly publicApiEndpoints = [
