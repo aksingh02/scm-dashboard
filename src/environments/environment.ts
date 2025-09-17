@@ -12,5 +12,5 @@ export const environment = {
     ////// production:
     // scm_endpoint: "https://api.sylphcorpsmedia.com/api/",
     // scm_auth_endpoint: "https://api.sylphcorpsmedia.com/api/auth/",
-
+    production: true
   };
