@@ -1,4 +1,4 @@
-// shared/interceptors/auth.interceptor.ts
+// shared/interceptors/auth.interceptor.ts - Updated with API key support
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
@@ -27,15 +27,19 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(request);
     }
 
-    // Add auth token to request if available
-    const authRequest = this.addTokenHeader(request);
+    // Add appropriate auth headers (API key or JWT token)
+    const authRequest = this.addAuthHeader(request);
 
     return next.handle(authRequest).pipe(
       catchError(error => {
         if (error instanceof HttpErrorResponse && !authRequest.url.includes('auth/signin')) {
           switch (error.status) {
             case 401:
-              return this.handle401Error(authRequest, next);
+              // Only try to refresh token for JWT-protected endpoints
+              if (!this.authService.isPublicApiEndpoint(authRequest.url)) {
+                return this.handle401Error(authRequest, next);
+              }
+              break;
             case 403:
               // Forbidden - redirect to unauthorized page or login
               this.router.navigate(['/unauthorized']);
@@ -50,10 +54,20 @@ export class AuthInterceptor implements HttpInterceptor {
     );
   }
 
-  private addTokenHeader(request: HttpRequest<any>): HttpRequest<any> {
+  private addAuthHeader(request: HttpRequest<any>): HttpRequest<any> {
+    // Check if this is a public API endpoint that requires API key
+    if (this.authService.isPublicApiEndpoint(request.url)) {
+      console.log('Adding API key for public endpoint:', request.url);
+      return request.clone({
+        headers: request.headers.set('X-API-KEY', this.authService.getApiKey())
+      });
+    }
+
+    // For other endpoints, use JWT token if available
     const token = this.authService.getTokenForHeader();
     
     if (token && this.isBrowser) {
+      console.log('Adding JWT token for protected endpoint:', request.url);
       return request.clone({
         headers: request.headers.set('Authorization', token)
       });
@@ -83,7 +97,7 @@ export class AuthInterceptor implements HttpInterceptor {
             this.isRefreshing = false;
             this.refreshTokenSubject.next(response.token);
             
-            return next.handle(this.addTokenHeader(request));
+            return next.handle(this.addAuthHeader(request));
           }),
           catchError((err) => {
             this.isRefreshing = false;
@@ -100,7 +114,7 @@ export class AuthInterceptor implements HttpInterceptor {
     return this.refreshTokenSubject.pipe(
       filter(token => token !== null),
       take(1),
-      switchMap(() => next.handle(this.addTokenHeader(request)))
+      switchMap(() => next.handle(this.addAuthHeader(request)))
     );
-  } 
+  }
 }

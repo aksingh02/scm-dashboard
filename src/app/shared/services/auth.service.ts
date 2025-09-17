@@ -1,4 +1,4 @@
-// shared/services/auth.service.ts - Updated role handling methods
+// shared/services/auth.service.ts - Updated with API key support
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
@@ -38,6 +38,20 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
   private isBrowser: boolean;
+  
+  // API Key for public endpoints
+  private readonly API_KEY = 'sk_prod_abc123def456ghi789jkl012mno345pqr';
+  
+  // Public endpoints that require API key instead of JWT
+  private readonly publicApiEndpoints = [
+    '/api/articles/public',
+    '/api/articles/categories',
+    '/api/articles/category',
+    '/api/articles/featured',
+    '/api/articles/trending',
+    '/api/articles/latest',
+    '/api/articles/search'
+  ];
 
   constructor(
     private http: HttpClient,
@@ -225,14 +239,27 @@ export class AuthService {
     return user.roles.map(role => this.normalizeRole(role));
   }
 
-  // Get authorization headers for API calls
-  getAuthHeaders(): HttpHeaders {
-    const token = this.getStoredToken();
+  // NEW: Check if URL is a public API endpoint
+  isPublicApiEndpoint(url: string): boolean {
+    return this.publicApiEndpoints.some(endpoint => url.includes(endpoint));
+  }
+
+  // UPDATED: Get authorization headers for API calls (now supports API key)
+  getAuthHeaders(url?: string): HttpHeaders {
     let headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     });
 
+    // If it's a public API endpoint, use API key
+    if (url && this.isPublicApiEndpoint(url)) {
+      headers = headers.set('X-API-KEY', this.API_KEY);
+      console.log('Using API key for public endpoint:', url);
+      return headers;
+    }
+
+    // Otherwise, use JWT token if available
+    const token = this.getStoredToken();
     if (token && this.isTokenValid(token)) {
       headers = headers.set('Authorization', token);
     }
@@ -240,13 +267,23 @@ export class AuthService {
     return headers;
   }
 
-  // Get token for manual header setting
-  getTokenForHeader(): string | null {
+  // UPDATED: Get token for manual header setting
+  getTokenForHeader(url?: string): string | null {
+    // If it's a public API endpoint, return API key format
+    if (url && this.isPublicApiEndpoint(url)) {
+      return null; // Let the interceptor handle API key in headers
+    }
+
     const token = this.getStoredToken();
     if (token && this.isTokenValid(token)) {
       return token;
     }
     return null;
+  }
+
+  // NEW: Get API key for public endpoints
+  getApiKey(): string {
+    return this.API_KEY;
   }
 
   // Refresh token (if your API supports it)
@@ -367,4 +404,4 @@ export class AuthService {
       error: error.error
     }));
   }
-} 
+}

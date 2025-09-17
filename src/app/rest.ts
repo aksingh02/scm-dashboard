@@ -241,7 +241,7 @@ export class Rest {
   // ==================== EXISTING ARTICLE METHODS ====================
 
   getArticlesCategories(): Observable<any> {
-    return this.http.get(endpoint + "articles/categoriesDto", {
+    return this.http.get(endpoint + "articles/category", {
       headers: this.getHeaders(true)
     });
   }
@@ -263,7 +263,7 @@ export class Rest {
 
     return this.http.get<ApiResponse>(endpoint + "articles/public", {
       params,
-      headers: this.getHeaders(false)
+      headers: this.getHeaders(true)
     });
   }
 
